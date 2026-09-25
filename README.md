@@ -68,6 +68,13 @@ The infrastructure includes:
 .
 ├── README.md
 ├── .gitignore
+├── docs/
+│   └── screenshots/
+│       ├── scrot-1.jpg
+│       ├── scrot-2.jpg
+│       ├── scrot-3.jpg
+│       ├── scrot-4.jpg
+│       └── scrot-5.jpg
 └── terraform/
     ├── main.tf
     ├── variables.tf
