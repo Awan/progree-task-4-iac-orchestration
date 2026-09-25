@@ -97,7 +97,7 @@ resource "kubernetes_stateful_set_v1" "postgres" {
 
           env {
             name  = "POSTGRES_PASSWORD"
-            value = "progree-local-only"
+            value = var.postgres_password
           }
 
           volume_mount {
@@ -123,6 +123,224 @@ resource "kubernetes_stateful_set_v1" "postgres" {
 
           persistent_volume_claim {
             claim_name = kubernetes_persistent_volume_claim_v1.postgres.metadata[0].name
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service_v1" "redis" {
+  metadata {
+    name      = "redis"
+    namespace = kubernetes_namespace_v1.progree.metadata[0].name
+  }
+
+  spec {
+    selector = {
+      app = "redis"
+    }
+
+    port {
+      port        = 6379
+      target_port = 6379
+    }
+  }
+}
+
+resource "kubernetes_deployment_v1" "redis" {
+  metadata {
+    name      = "redis"
+    namespace = kubernetes_namespace_v1.progree.metadata[0].name
+  }
+
+  spec {
+    replicas = 1
+
+    selector {
+      match_labels = {
+        app = "redis"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "redis"
+        }
+      }
+
+      spec {
+        container {
+          name  = "redis"
+          image = "redis:7-alpine"
+
+          port {
+            container_port = 6379
+          }
+
+          resources {
+            requests = {
+              cpu    = "50m"
+              memory = "64Mi"
+            }
+
+            limits = {
+              cpu    = "250m"
+              memory = "256Mi"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_secret_v1" "backend" {
+  metadata {
+    name      = "backend-secrets"
+    namespace = kubernetes_namespace_v1.progree.metadata[0].name
+  }
+
+  data = {
+    postgres_password = var.postgres_password
+  }
+
+  type = "Opaque"
+}
+
+resource "kubernetes_service_v1" "backend" {
+  metadata {
+    name      = "backend"
+    namespace = kubernetes_namespace_v1.progree.metadata[0].name
+  }
+
+  spec {
+    selector = {
+      app = "backend"
+    }
+
+    port {
+      port        = 8000
+      target_port = 8000
+    }
+  }
+}
+
+resource "kubernetes_deployment_v1" "backend" {
+  metadata {
+    name      = "backend"
+    namespace = kubernetes_namespace_v1.progree.metadata[0].name
+  }
+
+  spec {
+    replicas = 2
+
+    selector {
+      match_labels = {
+        app = "backend"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "backend"
+        }
+      }
+
+      spec {
+        automount_service_account_token = false
+        container {
+          name              = "backend"
+          image             = "ghcr.io/awan/progree-task-2-backend:latest"
+          image_pull_policy = "IfNotPresent"
+
+          port {
+            container_port = 8000
+          }
+
+          env {
+            name  = "DATABASE_HOST"
+            value = "postgres"
+          }
+
+          env {
+            name  = "DATABASE_PORT"
+            value = "5432"
+          }
+
+          env {
+            name  = "DATABASE_NAME"
+            value = "progree"
+          }
+
+          env {
+            name  = "DATABASE_USER"
+            value = "progree"
+          }
+
+          env {
+            name  = "REDIS_HOST"
+            value = "redis"
+          }
+
+          env {
+            name  = "REDIS_PORT"
+            value = "6379"
+          }
+
+          env {
+            name  = "POSTGRES_PASSWORD_FILE"
+            value = "/run/secrets/postgres_password"
+          }
+
+          volume_mount {
+            name       = "postgres-password"
+            mount_path = "/run/secrets"
+            read_only  = true
+          }
+
+          readiness_probe {
+            http_get {
+              path = "/health"
+              port = 8000
+            }
+
+            initial_delay_seconds = 5
+            period_seconds        = 10
+            timeout_seconds       = 5
+            failure_threshold     = 3
+          }
+
+          liveness_probe {
+            tcp_socket {
+              port = 8000
+            }
+
+            initial_delay_seconds = 15
+            period_seconds        = 20
+            timeout_seconds       = 5
+          }
+
+          resources {
+            requests = {
+              cpu    = "100m"
+              memory = "128Mi"
+            }
+
+            limits = {
+              cpu    = "500m"
+              memory = "512Mi"
+            }
+          }
+        }
+
+        volume {
+          name = "postgres-password"
+
+          secret {
+            secret_name = kubernetes_secret_v1.backend.metadata[0].name
           }
         }
       }
