@@ -439,3 +439,33 @@ resource "kubernetes_deployment_v1" "frontend" {
     }
   }
 }
+
+resource "kubernetes_ingress_v1" "frontend" {
+  metadata {
+    name      = "frontend"
+    namespace = kubernetes_namespace_v1.progree.metadata[0].name
+  }
+
+  spec {
+    ingress_class_name = "nginx"
+
+    rule {
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+
+          backend {
+            service {
+              name = kubernetes_service_v1.frontend.metadata[0].name
+
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
