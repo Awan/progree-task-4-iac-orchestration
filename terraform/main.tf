@@ -347,3 +347,95 @@ resource "kubernetes_deployment_v1" "backend" {
     }
   }
 }
+
+resource "kubernetes_service_v1" "frontend" {
+  metadata {
+    name      = "frontend"
+    namespace = kubernetes_namespace_v1.progree.metadata[0].name
+  }
+
+  spec {
+    selector = {
+      app = "frontend"
+    }
+
+    port {
+      port        = 80
+      target_port = 80
+    }
+  }
+}
+
+resource "kubernetes_deployment_v1" "frontend" {
+  metadata {
+    name      = "frontend"
+    namespace = kubernetes_namespace_v1.progree.metadata[0].name
+  }
+
+  spec {
+    replicas = 2
+
+    selector {
+      match_labels = {
+        app = "frontend"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "frontend"
+        }
+      }
+
+      spec {
+        automount_service_account_token = false
+
+        container {
+          name              = "frontend"
+          image             = "ghcr.io/awan/progree-task-2-frontend:latest"
+          image_pull_policy = "IfNotPresent"
+
+          port {
+            container_port = 80
+          }
+
+          readiness_probe {
+            http_get {
+              path = "/health"
+              port = 80
+            }
+
+            initial_delay_seconds = 5
+            period_seconds        = 10
+            timeout_seconds       = 5
+            failure_threshold     = 3
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/"
+              port = 80
+            }
+
+            initial_delay_seconds = 10
+            period_seconds        = 20
+            timeout_seconds       = 5
+          }
+
+          resources {
+            requests = {
+              cpu    = "50m"
+              memory = "64Mi"
+            }
+
+            limits = {
+              cpu    = "250m"
+              memory = "256Mi"
+            }
+          }
+        }
+      }
+    }
+  }
+}
