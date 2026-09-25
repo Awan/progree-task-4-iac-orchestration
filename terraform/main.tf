@@ -11,3 +11,9 @@ provider "kubernetes" {
   config_path    = "~/.kube/config"
   config_context = "minikube"
 }
+
+resource "kubernetes_namespace_v1" "progree" {
+  metadata {
+    name = "progree"
+  }
+}
