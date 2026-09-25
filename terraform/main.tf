@@ -233,8 +233,13 @@ resource "kubernetes_deployment_v1" "backend" {
     namespace = kubernetes_namespace_v1.progree.metadata[0].name
   }
 
+  lifecycle {
+    ignore_changes = [spec[0].replicas]
+  }
+
   spec {
     replicas = 2
+
 
     selector {
       match_labels = {
