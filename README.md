@@ -364,6 +364,40 @@ This project demonstrates:
 - Terraform and HPA coexistence
 - Infrastructure drift verification
 
+## Verification Evidence
+
+The following screenshots document the completed Kubernetes deployment and validation.
+
+### 1. Kubernetes Infrastructure
+
+Shows the healthy Progree Kubernetes workloads, Services, PostgreSQL persistent storage, HPA, and NGINX Ingress.
+
+![Kubernetes infrastructure](docs/screenshots/scrot-1.jpg)
+
+### 2. Terraform Drift Verification
+
+Shows Terraform reporting that the deployed infrastructure matches the configuration with no pending changes.
+
+![Terraform plan](docs/screenshots/scrot-2.jpg)
+
+### 3. End-to-End Application Verification
+
+Shows successful frontend access, backend API access, and application health through the NGINX Ingress, including healthy PostgreSQL and Redis connectivity.
+
+![Application verification](docs/screenshots/scrot-3.jpg)
+
+### 4. Horizontal Pod Autoscaling
+
+Shows the backend scaling from 2 to 4 replicas when CPU utilization exceeded the configured 70% target.
+
+![HPA scaling](docs/screenshots/scrot-4.jpg)
+
+### 5. Final Healthy State
+
+Shows the application returning to its normal 2 backend replicas after the autoscaling test, with the complete stack healthy.
+
+![Final healthy state](docs/screenshots/scrot-5.jpg)
+
 ## Repository
 
 GitHub:
