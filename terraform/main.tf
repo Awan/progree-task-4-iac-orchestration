@@ -469,3 +469,34 @@ resource "kubernetes_ingress_v1" "frontend" {
     }
   }
 }
+
+resource "kubernetes_horizontal_pod_autoscaler_v2" "backend" {
+  metadata {
+    name      = "backend"
+    namespace = kubernetes_namespace_v1.progree.metadata[0].name
+  }
+
+  spec {
+    min_replicas = 2
+    max_replicas = 4
+
+    scale_target_ref {
+      api_version = "apps/v1"
+      kind        = "Deployment"
+      name        = kubernetes_deployment_v1.backend.metadata[0].name
+    }
+
+    metric {
+      type = "Resource"
+
+      resource {
+        name = "cpu"
+
+        target {
+          type                = "Utilization"
+          average_utilization = 70
+        }
+      }
+    }
+  }
+}
