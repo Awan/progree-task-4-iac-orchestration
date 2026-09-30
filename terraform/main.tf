@@ -8,8 +8,8 @@ terraform {
 }
 
 provider "kubernetes" {
-  config_path    = "~/.kube/config"
-  config_context = "minikube"
+  config_path    = var.kubeconfig_path
+  config_context = var.kubeconfig_context
 }
 
 resource "kubernetes_namespace_v1" "progree" {
