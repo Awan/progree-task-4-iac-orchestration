@@ -24,6 +24,8 @@ resource "kubernetes_persistent_volume_claim_v1" "postgres" {
     namespace = kubernetes_namespace_v1.progree.metadata[0].name
   }
 
+  wait_until_bound = false
+
   spec {
     access_modes = ["ReadWriteOnce"]
 
