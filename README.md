@@ -405,6 +405,34 @@ Shows the application returning to its normal 2 backend replicas after the autos
 
 ![Final healthy state](docs/screenshots/scrot-5.jpg)
 
+## AWS K3s Validation
+
+The Terraform configuration was additionally validated on a single-node K3s cluster running on AWS EC2.
+
+### 1. Terraform Deployment
+
+Shows Terraform successfully creating all 13 Kubernetes resources on the AWS K3s cluster.
+
+![AWS Terraform deployment](docs/screenshots/aws/scrot-1.jpg)
+
+### 2. Kubernetes Infrastructure
+
+Shows the healthy AWS Kubernetes workloads, Services, PostgreSQL persistent storage, HPA, and NGINX Ingress.
+
+![AWS Kubernetes infrastructure](docs/screenshots/aws/scrot-2.jpg)
+
+### 3. Application Health
+
+Shows successful frontend and backend application verification with HTTP 200 responses.
+
+![AWS application health](docs/screenshots/aws/scrot-3.jpg)
+
+### 4. Horizontal Pod Autoscaling
+
+Shows the backend HPA scaling from 2 to 4 replicas when CPU utilization exceeded the configured 70% target.
+
+![AWS HPA scaling](docs/screenshots/aws/scrot-4.jpg)
+
 ## Repository
 
 GitHub:

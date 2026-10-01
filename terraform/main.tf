@@ -8,8 +8,8 @@ terraform {
 }
 
 provider "kubernetes" {
-  config_path    = "~/.kube/config"
-  config_context = "minikube"
+  config_path    = var.kubeconfig_path
+  config_context = var.kubeconfig_context
 }
 
 resource "kubernetes_namespace_v1" "progree" {
@@ -23,6 +23,8 @@ resource "kubernetes_persistent_volume_claim_v1" "postgres" {
     name      = "postgres-data"
     namespace = kubernetes_namespace_v1.progree.metadata[0].name
   }
+
+  wait_until_bound = false
 
   spec {
     access_modes = ["ReadWriteOnce"]
